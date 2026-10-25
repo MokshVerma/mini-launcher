@@ -29,6 +29,14 @@ Requires a JDK 17 and the Android SDK (platform 34, build-tools 34.0.0). No Grad
 
 This produces `build/minilauncher.apk`, signed with the standard Android debug key.
 
+Release build (needs your own `release.keystore` and `signing.properties` next to `build.ps1`; both are git-ignored):
+
+```powershell
+./build.ps1 -Release -Version v0.1.0
+```
+
+This writes `dist/mini-launcher-v0.1.0.apk`. A different signing key from the debug one means a TV that has the debug build must uninstall it before installing the release build.
+
 ## Install on the TV (wireless debugging)
 
 ```bash

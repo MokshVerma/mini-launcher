@@ -3,3 +3,6 @@ build/
 *.keystore
 *.jks
 local.properties
+signing.properties
+release.keystore
+dist/
