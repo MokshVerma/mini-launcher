@@ -204,7 +204,7 @@ public class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- view
 
-    final class HomeView extends View {
+    final class HomeView extends android.view.SurfaceView implements android.view.SurfaceHolder.Callback {
         private static final int COLS = 6;
         private static final int VISIBLE_ROWS = 3;
 
@@ -240,6 +240,8 @@ public class MainActivity extends Activity {
 
         HomeView(Context c) {
             super(c);
+            getHolder().addCallback(this);
+            setWillNotDraw(false);
             setFocusable(true);
             setFocusableInTouchMode(true);
             applyClockFormat();
@@ -744,9 +746,97 @@ public class MainActivity extends Activity {
             return super.onKeyUp(code, e);
         }
 
-        // ---- drawing
+        // ---- drawing goes straight to a SurfaceView: on this TV a normal view only reaches ~30 fps, a surface ~50+
+        private boolean frameQueued, surfaceReady;
+        private final android.view.Choreographer.FrameCallback frameCb = new android.view.Choreographer.FrameCallback() {
+            @Override
+            public void doFrame(long ns) {
+                frameQueued = false;
+                drawToSurface();
+            }
+        };
+        private final Runnable queueFrame = new Runnable() {
+            @Override
+            public void run() {
+                requestFrame();
+            }
+        };
+
+        private final Runnable requestOnUi = new Runnable() {
+            @Override
+            public void run() {
+                requestFrame();
+            }
+        };
+
+        /** Safe to call from any thread (the icon loader redraws from a worker thread). */
+        private void requestFrame() {
+            if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
+                post(requestOnUi);
+                return;
+            }
+            if (frameQueued || !surfaceReady) return;
+            frameQueued = true;
+            android.view.Choreographer.getInstance().postFrameCallback(frameCb);
+        }
+
+        private void drawToSurface() {
+            if (!surfaceReady) return;
+            Canvas c = null;
+            try {
+                c = android.os.Build.VERSION.SDK_INT >= 26 ? getHolder().getSurface().lockHardwareCanvas()
+                        : getHolder().lockCanvas();
+                if (c != null) renderFrame(c);
+            } catch (Exception ignored) {
+            } finally {
+                if (c != null) {
+                    try {
+                        getHolder().getSurface().unlockCanvasAndPost(c);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+
         @Override
-        protected void onDraw(Canvas c) {
+        public void invalidate() {
+            requestFrame();
+        }
+
+        @Override
+        public void postInvalidateOnAnimation() {
+            requestFrame();
+        }
+
+        @Override
+        public void postInvalidate() {
+            requestFrame();
+        }
+
+        @Override
+        public void postInvalidateDelayed(long ms) {
+            removeCallbacks(queueFrame);
+            postDelayed(queueFrame, ms);
+        }
+
+        @Override
+        public void surfaceCreated(android.view.SurfaceHolder h) {
+            surfaceReady = true;
+            requestFrame();
+        }
+
+        @Override
+        public void surfaceChanged(android.view.SurfaceHolder h, int format, int w, int hh) {
+            surfaceReady = true;
+            requestFrame();
+        }
+
+        @Override
+        public void surfaceDestroyed(android.view.SurfaceHolder h) {
+            surfaceReady = false;
+        }
+
+        void renderFrame(Canvas c) {
             int w = getWidth(), h = getHeight();
             if (w == 0) return;
 

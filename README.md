@@ -64,6 +64,6 @@ and are released under CC0. The credit shown on screen comes from the API.
 
 ## Known limitations
 
-- Scrolling the full app grid runs at roughly 30 fps on the test TV.
+- Drawing goes straight to a SurfaceView. On the test TV the app grid scrolls at about 43 fps (a normal view managed about 30). The TV itself tops out near 52 fps even for an empty full-screen surface, so 60 fps is not reachable from app code.
 - The Control Center covers only what a normal app can change. Picture presets, backlight and power
   are not available without system permissions.
