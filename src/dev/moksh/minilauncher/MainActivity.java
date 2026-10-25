@@ -1047,7 +1047,7 @@ public class MainActivity extends Activity {
         private int blurMfR = -1;
 
         private void invalidateBackdrop() {
-            invalidateBackdrop();
+            snap = null;
             snapShader = null;
             bgBlur = null;
             bgShader = null;
