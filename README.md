@@ -5,6 +5,8 @@ The whole app is a single custom-drawn view, which keeps memory low (about 25-30
 
 Built and tested on a TCL Smart TV (Android 14, 2.4 GB RAM, 1080p).
 
+![Mini Launcher home screen on a TCL Google TV](docs/screenshots/home.jpg)
+
 ## Features
 
 - Home screen: clock, date, live RAM readout, and one row of apps in a clear glass container.
@@ -64,6 +66,14 @@ adb shell settings put secure screensaver_components dev.moksh.minilauncher/dev.
 
 Revert the home app to another launcher with the same `set-home-activity` command and that
 launcher's component name.
+
+## Set up a TV with an AI assistant
+
+[`docs/TV-SETUP-PROMPT.md`](docs/TV-SETUP-PROMPT.md) is a ready-made prompt for Claude Code (or a similar
+assistant that can run shell commands). It installs the launcher over wireless debugging, optionally speeds the
+TV up and disables unwanted background apps, **asks before every change**, and **backs everything up first**
+with a tested rollback script. Written for the TCL Smart TV Pro this was built on; the disable-apps phase is
+untested on other TVs.
 
 ## Artwork
 
